@@ -1,6 +1,9 @@
 package controller;
 
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -16,10 +19,14 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import model.User;
+import model.UserDAO;
 
 
 public class SignUpView extends Scene{
 	private GridPane gridPane;
+	
+	private Label error = new Label("Username exit");
 	
 	private Text topTitle = new Text("Register"); 
 	private Text bottomTitle = new Text("Create a new user!");
@@ -45,12 +52,21 @@ public class SignUpView extends Scene{
 			public void handle(ActionEvent event) {
 					
 				if (event.getSource() == registerButton) {
-					
-					stage.setScene(new CustumerView(stage, new BorderPane()));
+					try{
+						if(verif(usernameField,nameField,passwordField,passwordAgainField)) {
+							User user = new User(0,usernameField.getText(),nameField.getText(),passwordField.getText());
+							UserDAO.insertUser(user);
+						    stage.setScene(new CustumerView(stage, new BorderPane(), user));
+						 }
+					}catch(ClassNotFoundException e) {
+				            System.out.println("Problem occurred at executeQuery operation : " + e);
+					}catch(SQLException e) {
+				            System.out.println("Problem occurred at executeQuery operation : " + e);	
+					}
 				}
 				if (event.getSource() == backButton) {
 					System.out.println("Back");
-					stage.setScene(new FilmView(stage, new BorderPane()));
+					stage.setScene(new FilmView(stage, new BorderPane(), null));
 				}
 			}
 		};
@@ -58,6 +74,7 @@ public class SignUpView extends Scene{
 		backButton.setOnAction(eventHandler);
 		registerButton.setOnAction(eventHandler);
 		
+		error.setVisible(false);
 		
 		gridPane.setVgap(10); 
 		gridPane.setHgap(10); 
@@ -78,10 +95,39 @@ public class SignUpView extends Scene{
 		gridPane.add(passwordAgainField, 1, 5);
 		gridPane.add(registerButton, 0, 6);
 		gridPane.add(backButton, 1, 6);
-		
+		gridPane.add(error, 2, 3);
 		
 		gridPane.setPrefSize(900, 650);		
 			
 	}
-
+	
+	public boolean verif(TextField n,TextField un,PasswordField p,PasswordField pa) {
+		if(!( (n.getText().isEmpty())||(un.getText().isEmpty())||(p.getText().isEmpty())||(pa.getText().isEmpty()) )) {
+			try {
+			if( (p.getText().length()>=8)&&(pa.getText().equals(p.getText()))&&(checkUser(n)) ) {
+				return true;
+			}
+			return false;
+			}catch(ClassNotFoundException e) {
+	            return false;
+			}catch(SQLException e) {
+	            return false;
+			}
+		}
+		else return false;
+	};
+	
+	
+	public boolean checkUser(TextField usernameFiled) throws ClassNotFoundException, SQLException{
+		ArrayList<User> userList = new ArrayList<User>();
+		userList = UserDAO.getAllUser();
+		for(int i=0;i<userList.size();i++) {
+			if(userList.get(i).getUserName().equals(usernameFiled.getText())) {
+					error.setVisible(true);
+					return false;
+			}
+		}
+		error.setVisible(false);
+		return true;
+	}
 }

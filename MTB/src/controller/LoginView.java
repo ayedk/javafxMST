@@ -1,5 +1,9 @@
 package controller;
 
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -15,6 +19,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import model.User;
+import model.UserDAO;
 
 public class LoginView extends Scene{
 	
@@ -49,19 +55,33 @@ public class LoginView extends Scene{
 			public void handle(ActionEvent event) {
 				
 				if ((event.getSource() == loginButton)) {
-					if(usernameField.getText().equals("admin")&&passwordField.getText().equals("admin")) {
-						stage.setScene(new CustumerView(stage, new BorderPane()));
+					try{
+						if((checkLogin(usernameField,passwordField)) != null) 
+							stage.setScene(new CustumerView(stage, new BorderPane(), checkLogin(usernameField,passwordField)));
+					}catch(ClassNotFoundException e) {
+			            System.out.println("Problem occurred at executeQuery operation : " + e);
+					}catch(SQLException e) {
+			            System.out.println("Problem occurred at executeQuery operation : " + e);
 					}
 						
 						
 					
 				}
-				if (event.getSource() == backButton) {
-					System.out.println("Back");
-					stage.setScene(new FilmView(stage, new BorderPane()));
+				try{
+					if (event.getSource() == backButton) {
+						System.out.println("Back");
+						stage.setScene(new FilmView(stage, new BorderPane(),checkLogin(usernameField,passwordField)));
+					}
+				}catch(ClassNotFoundException e) {
+		            System.out.println("Problem occurred at executeQuery operation : " + e);
+				}catch(SQLException e) {
+		            System.out.println("Problem occurred at executeQuery operation : " + e);
 				}
 			}
 		};
+		
+		
+		
 
 		backButton.setOnAction(eventHandler);
 		loginButton.setOnAction(eventHandler);
@@ -82,4 +102,17 @@ public class LoginView extends Scene{
 		gridPane.setPrefSize(900, 650);
 		
 	}
+	public User checkLogin(TextField tf,PasswordField pf) throws ClassNotFoundException, SQLException{
+		ArrayList<User> userList = new ArrayList<User>();
+		userList = UserDAO.getAllUser();
+		for(int i=0;i<userList.size();i++) {
+			if(userList.get(i).getUserName().equals(tf.getText())) {
+				if(userList.get(i).getPassword().equals(pf.getText())) {
+					return new User(userList.get(i).getId(),userList.get(i).getUserName(),userList.get(i).getName(),userList.get(i).getPassword());
+				}
+			}
+		}
+		return null;
+	}
+	
 }

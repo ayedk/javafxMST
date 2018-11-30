@@ -11,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -19,6 +20,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import model.User;
 
 public class CustumerView extends Scene{
 	
@@ -29,14 +31,13 @@ public class CustumerView extends Scene{
 	final FileChooser fileChooser = new FileChooser();
     
 	
-	final private Label Text = new Label("Custumuer View");; 
+	final private Label Text = new Label("Custumuer View"); 
 	
 	final private Button btnLogout = new Button("Logout");
-	final private Button btnEdit = new Button("Edit");
 	final private Button btnFilmView = new Button("Film View");
 	final private Button btnBookingView = new Button("Booking History");
 	
-	public CustumerView(Stage stage, BorderPane borderpane) {
+	public CustumerView(Stage stage, BorderPane borderpane, User user) {
 		super(borderpane);
 		this.BorderPane = borderpane;
 		BorderPane.setStyle(
@@ -47,7 +48,7 @@ public class CustumerView extends Scene{
 				+ "-fx-effect: dropshadow(three-pass-box, black, 30, 0.5, 0, 0);");
 		navbar();
 		
-		sidebarleft();
+		sidebarleft(user);
 		
 		sidebarright();
 		
@@ -55,15 +56,18 @@ public class CustumerView extends Scene{
 			public void handle(ActionEvent event) {
 					
 				if(event.getSource() == btnFilmView) {
-					stage.setScene(new FilmView(stage, new BorderPane()));
+					stage.setScene(new FilmView(stage, new BorderPane(),user));
 				}
 				if (event.getSource() == btnLogout) {
 					
-					stage.setScene(new FilmView(stage, new BorderPane()));
+					stage.setScene(new FilmView(stage, new BorderPane(),null));
+				}
+				if(event.getSource() == btnBookingView) {
+					stage.setScene(new BookingView(stage, new BorderPane(), user));
 				}
 			}
 		};
-
+		btnBookingView.setOnAction(eventHandler);
 		btnLogout.setOnAction(eventHandler);
 		btnFilmView.setOnAction(eventHandler);
 		
@@ -96,7 +100,7 @@ public class CustumerView extends Scene{
 		BorderPane.setTop(hbox);
 	}
 	
-	public void sidebarleft(){
+	public void sidebarleft(User user){
 		Region region = new Region();
 		Region region1 = new Region();
 		Image image = new Image("images/user.png");
@@ -110,13 +114,17 @@ public class CustumerView extends Scene{
 		
 		Label lb = new Label("Name: "); 
 		Label lb1 = new Label("UserName: ");
+		Label lb2 = new Label(user.getName());
+		Label lb3 = new Label(user.getUserName());
 		
-		btnEdit.setMinWidth(120);
-		btnEdit.setMinHeight(50);
-		btnEdit.setStyle("-fx-background-color: #9e6758; -fx-text-fill: #51ffe2;");
-		btnEdit.setFont(new Font("Verdana", 18));
+		GridPane gp = new GridPane();
+		gp.setAlignment(Pos.CENTER);
+		gp.add(lb, 0, 0);
+		gp.add(lb1, 0, 1);
+		gp.add(lb2, 1, 0);
+		gp.add(lb3, 1, 1);
 		
-		VBox vb = new VBox(iv, button, lb, lb1,region, region1, btnEdit);
+		VBox vb = new VBox(iv, button, gp,region, region1);
 		VBox.setVgrow(region, Priority.ALWAYS);
         VBox.setVgrow(region1, Priority.ALWAYS);
 		vb.setStyle(" -fx-padding: 30 60 30 60; -fx-border-color: black;-fx-border-width: 0 1 3 0 ;");
